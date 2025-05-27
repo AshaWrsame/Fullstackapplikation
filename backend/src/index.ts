@@ -1,16 +1,19 @@
 import express from 'express'
 import cors from 'cors'
-import productsRouter from './routes/products'
+import authRoutes from './routes/auth'
+import productRoutes from './routes/products'
 
 const app = express()
 const PORT = 3000
 
-app.use(cors());
+app.use(cors())
 app.use(express.json())
-app.use('/products', productsRouter)
+
+app.use('/auth', authRoutes)
+app.use('/api/products', productRoutes)
 
 app.get('/', (req, res) => {
-  res.send('Välkommen till API:et!')
+  res.send('Välkommen till e-butiken API!');
 })
 
 app.listen(PORT, () => {

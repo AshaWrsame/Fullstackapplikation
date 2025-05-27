@@ -1,44 +1,45 @@
-import { getDbConnection } from './db'
+import sqlite3 from 'sqlite3'
+import { open } from 'sqlite'
 
-(async () => {
-  console.log('Ansluter till databas...')
+async function initDb() {
+  const db = await open({
+    filename: 'database.sqlite',
+    driver: sqlite3.Database,
+  })
 
-  const db = await getDbConnection()
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      role TEXT DEFAULT 'user'
-    );
+  console.log('Ansluten till databasen.');
 
-    CREATE TABLE IF NOT EXISTS products (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      description TEXT,
-      price REAL NOT NULL,
-      image_url TEXT,
-      category_id INTEGER
-    );
-
+  await db.run(`
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL
     );
+  `)
 
-    CREATE TABLE IF NOT EXISTS orders (
+  await db.run(`
+    CREATE TABLE IF NOT EXISTS products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS order_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      order_id INTEGER NOT NULL,
-      product_id INTEGER NOT NULL,
-      quantity INTEGER NOT NULL
+      name TEXT NOT NULL,
+      description TEXT,
+      price INTEGER NOT NULL,
+      image_url TEXT,
+      category_id INTEGER,
+      FOREIGN KEY (category_id) REFERENCES categories(id)
     );
   `)
-  console.log('Databas initierad')
-})()
+
+await db.run(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE,
+    password TEXT
+  )
+`);
+
+  console.log('Tabeller skapade!')
+  await db.close()
+}
+
+initDb().catch((err) => {
+  console.error('Fel vid initiering av databas:', err)
+})
