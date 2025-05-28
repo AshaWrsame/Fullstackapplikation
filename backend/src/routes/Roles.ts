@@ -8,7 +8,7 @@ const JWT_SECRET = 'din-hemliga-nyckel'
 
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { username, password } = req.body
+    const { username, password, role = 'user'  } = req.body
     if (!username || !password) {
       res.status(400).json({ error: 'Användarnamn och lösenord krävs' })
       return
@@ -22,7 +22,9 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
-    await db.run('INSERT INTO users (username, password) VALUES (?, ?)', username, hashedPassword)
+   await db.run(
+  'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+  username, hashedPassword, role)
 
     res.status(201).json({ message: 'Användare registrerad!' })
   } catch (error) {
@@ -55,7 +57,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return
     }
 
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, {
+    const token = jwt.sign({ userId: user.id, username: user.username, role: user.role }, JWT_SECRET, {
       expiresIn: '1h',
     })
 

@@ -1,16 +1,17 @@
 import express from 'express'
 import { getDbConnection } from '../db'
+import { authenticateToken, requireAdmin } from '../middleware/authorization'
 
 const router = express.Router()
 
 router.get('/', async (req, res) => {
-  const db = await getDbConnection();
+  const db = await getDbConnection()
   const products = await db.all('SELECT * FROM products')
   res.json(products)
 })
 
 router.get('/:id', async (req, res) => {
-  const db = await getDbConnection();
+  const db = await getDbConnection()
   const product = await db.get('SELECT * FROM products WHERE id = ?', req.params.id)
 
   if (product) {
@@ -20,7 +21,7 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   const { name, description, price, image_url, category_id } = req.body
 
   if (!name || !price) {
@@ -38,4 +39,9 @@ router.post('/', async (req, res) => {
   const newProduct = await db.get('SELECT * FROM products WHERE id = ?', result.lastID)
   res.status(201).json(newProduct)
 })
+
+router.post('/admin-only', authenticateToken, requireAdmin, (req, res) => {
+  res.json({ message: 'Endast admin kan se detta' })
+})
+
 export default router
