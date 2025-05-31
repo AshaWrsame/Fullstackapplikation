@@ -59,14 +59,14 @@ export async function initializeDatabase() {
     `INSERT OR IGNORE INTO users (username, password, role) VALUES (?, ?, ?)`,
     'adminuser',
     adminPassword,
-    'admin'
+    'Admin'
   )
 
   await db.run(
     `INSERT OR IGNORE INTO users (username, password, role) VALUES (?, ?, ?)`,
     'testuser',
     userPassword,
-    'user'
+    'User'
   )
 
   console.log('Databasen är initierad med standardanvändare.')

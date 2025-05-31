@@ -1,0 +1,35 @@
+.login-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.tabs button {
+  padding: 0.5rem 1rem;
+  margin: 0 0.5rem;
+  cursor: pointer;
+  border: none;
+  background-color: #eee;
+  font-weight: bold;
+}
+
+.tabs .active {
+  background-color: #ccc;
+}
+
+.form {
+  margin-top: 1rem;
+}
+
+input {
+  display: block;
+  margin: 0.5rem auto;
+  padding: 0.5rem;
+  width: 100%;
+}
+
+button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+}
