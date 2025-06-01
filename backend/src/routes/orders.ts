@@ -10,16 +10,31 @@ router.post('/', authenticateToken, async (req, res): Promise<void> => {
 
   if (!items || !Array.isArray(items) || items.length === 0) {
     res.status(400).json({ error: 'Inga produkter angivna' })
-    return;
+    return
   }
 
   const db = await getDbConnection()
-
   const result = await db.run(`INSERT INTO orders (user_id) VALUES (?)`, userId)
   const orderId = result.lastID
 
   for (const item of items) {
-    const { product_id, quantity } = item
+    const { product_id, title, image_url, quantity } = item
+
+    let product = await db.get('SELECT * FROM products WHERE id = ?', product_id)
+
+    if (!product) {
+      await db.run(
+        `INSERT INTO products (id, name, description, price, image_url, category_id)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        product_id,
+        title,
+        'Ingen beskrivning',
+        100,
+        image_url,
+        1
+      )
+    }
+
     await db.run(
       `INSERT INTO order_items (order_id, product_id, quantity) VALUES (?, ?, ?)`,
       orderId,

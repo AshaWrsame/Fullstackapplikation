@@ -25,8 +25,10 @@ export async function initializeDatabase() {
       name TEXT NOT NULL
     );
 
+    INSERT OR IGNORE INTO categories (id, name) VALUES (1, 'Okänd');
+
     CREATE TABLE IF NOT EXISTS products (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       description TEXT,
       price REAL NOT NULL,
@@ -45,12 +47,12 @@ export async function initializeDatabase() {
     CREATE TABLE IF NOT EXISTS order_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       order_id INTEGER,
-      product_id INTEGER,
+      product_id TEXT,
       quantity INTEGER,
       FOREIGN KEY (order_id) REFERENCES orders(id),
       FOREIGN KEY (product_id) REFERENCES products(id)
     );
-  `)
+  `);
 
   const adminPassword = await bcrypt.hash('admin123', 10)
   const userPassword = await bcrypt.hash('user123', 10)
@@ -59,15 +61,14 @@ export async function initializeDatabase() {
     `INSERT OR IGNORE INTO users (username, password, role) VALUES (?, ?, ?)`,
     'adminuser',
     adminPassword,
-    'Admin'
-  )
+    'admin'
+  );
 
   await db.run(
     `INSERT OR IGNORE INTO users (username, password, role) VALUES (?, ?, ?)`,
     'testuser',
     userPassword,
-    'User'
+    'user'
   )
 
-  console.log('Databasen är initierad med standardanvändare.')
 }

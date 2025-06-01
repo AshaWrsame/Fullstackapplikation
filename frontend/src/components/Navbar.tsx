@@ -17,21 +17,22 @@ const Navbar: React.FC = () => {
   return (
     <nav className="navbar">
       <div className="navbar-logo">
-        <Link to="/">Bokbutiken</Link>
+        <Link to="/">Mooney´s Book Store</Link>
       </div>
       <div className="navbar-links">
-        <Link to="/">Hem</Link>
-        <Link to="/products">Böcker</Link>
-        {!token && <Link to="/login">Logga in</Link>}
+        <Link to="/">Home</Link>
+        <Link to="/products">Books</Link>
+        {!token && <Link to="/login">Login</Link>}
         {token && (
           <>
-            <span className="navbar-role"> {role}</span>
-            <button onClick={handleLogout}>Logga ut</button>
+            <Link to="/order-history">Orderhistorik</Link>
+            <span className="navbar-role">{role}</span>
+            <button onClick={handleLogout}>Log out</button>
           </>
         )}
       </div>
     </nav>
-  );
-};
+  )
+}
 
 export default Navbar
