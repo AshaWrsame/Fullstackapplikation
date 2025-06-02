@@ -6,72 +6,100 @@ interface Book {
   title: string;
   author_name?: string[];
   cover_i?: number;
+  subject?: string[];
+  first_publish_year?: number;
+  language?: string[];
 }
 
 const Products: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([])
-  const [limit, setLimit] = useState(20)
+  const [limit, setLimit] = useState(20);
+  const [subject, setSubject] = useState('')
+  const [year, setYear] = useState('')
+  const [language, setLanguage] = useState('')
+
+  const fetchBooks = async () => {
+    try {
+      let query = 'programming'
+      if (subject) query += `+subject:${subject}`
+      if (year) query += `+first_publish_year:${year}`
+      if (language) query += `+language:${language}`
+
+      const queryUrl = `https://openlibrary.org/search.json?q=${query}&limit=${limit}`
+      console.log('Query URL:', queryUrl)
+
+      const response = await fetch(queryUrl)
+      const data = await response.json()
+      console.log('Resultat från API:', data.docs)
+      setBooks(data.docs)
+    } catch (error) {
+      console.error('Fel vid hämtning av böcker:', error)
+    }
+  }
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const response = await fetch(`https://openlibrary.org/search.json?q=programming&limit=${limit}`)
-        const data = await response.json()
-        setBooks(data.docs)
-      } catch (error) {
-        console.error('Fel vid hämtning av böcker:', error)
-      }
-    }
+    fetchBooks();
+  }, [limit, subject, year, language])
 
-    fetchBooks()
-  }, [limit])
-
-  const handleBuy = async (book: Book) => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      alert('Du måste vara inloggad för att köpa.')
-      return
-    }
-
+  const handleAddToCart = (book: Book) => {
     const productId = book.key.replace('/works/', '')
     const imageUrl = book.cover_i
       ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
       : '';
 
-    try {
-      const response = await fetch('http://localhost:3000/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          items: [
-            {
-              product_id: productId,
-              title: book.title,
-              image_url: imageUrl,
-              quantity: 1,
-            },
-          ],
-        }),
-      });
+    const cartItem = {
+      product_id: productId,
+      title: book.title,
+      image_url: imageUrl,
+      quantity: 1,
+    };
 
-      const data = await response.json()
-      if (response.ok) {
-        alert('Boken har köpts!')
-      } else {
-        alert(data.error || 'Något gick fel.')
-      }
-    } catch (err) {
-      console.error(err)
-      alert('Något gick fel vid köpet.')
-    }
+    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
+    const updatedCart = [...existingCart, cartItem]
+    localStorage.setItem('cart', JSON.stringify(updatedCart))
+    alert('Boken har lagts till i varukorgen!')
   }
 
   return (
     <div className="products-container">
       <h1>Alla Böcker</h1>
+
+      <div className="filter">
+        <label>
+          Ämne:
+          <select value={subject} onChange={(e) => setSubject(e.target.value)}>
+            <option value="">Alla</option>
+            <option value="fiction">Fiction</option>
+            <option value="history">History</option>
+            <option value="science">Science</option>
+            <option value="technology">Technology</option>
+            <option value="biography">Biography</option>
+          </select>
+        </label>
+
+        <label>
+          År:
+          <input
+            type="number"
+            value={year}
+            placeholder="Ex: 2020"
+            onChange={(e) => setYear(e.target.value)}
+          />
+        </label>
+
+        <label>
+          Språk:
+          <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+            <option value="">Alla</option>
+            <option value="eng">Engelska</option>
+            <option value="swe">Svenska</option>
+            <option value="ger">Tyska</option>
+            <option value="fre">Franska</option>
+            <option value="spa">Spanska</option>
+          </select>
+        </label>
+      </div>
+
       <div className="book-grid">
         {books.map((book) => {
           const imageUrl = book.cover_i
@@ -87,16 +115,17 @@ const Products: React.FC = () => {
               )}
               <h3>{book.title}</h3>
               <p>{book.author_name?.join(', ')}</p>
-              <button onClick={() => handleBuy(book)}>Buy</button>
+              <button onClick={() => handleAddToCart(book)}>Lägg i varukorg</button>
             </div>
           );
         })}
       </div>
+
       <button className="show-more" onClick={() => setLimit(limit + 10)}>
         Visa fler böcker
       </button>
     </div>
-  );
-};
+  )
+}
 
 export default Products

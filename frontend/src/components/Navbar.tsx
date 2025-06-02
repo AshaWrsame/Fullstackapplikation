@@ -27,6 +27,7 @@ const Navbar: React.FC = () => {
           <>
             <Link to="/order-history">Orderhistorik</Link>
             <span className="navbar-role">{role}</span>
+            <Link to="/cart">Varukorg</Link>
             <button onClick={handleLogout}>Log out</button>
           </>
         )}

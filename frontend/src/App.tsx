@@ -7,23 +7,26 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Products from './pages/Products'
 import OrderHistory from './pages/OrderHistory'
-
+import Cart from './pages/Cart'
+import './App.css'
 
 const App = () => {
   return (
     <Router>
-      <Navbar />
-      <div className="main-content">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-           <Route path="/products" element={<Products />} />
-           <Route path="/order-history" element={<OrderHistory />} />
-        </Routes>
+      <div className="app-container">
+        <Navbar />
+        <div className="main-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/order-history" element={<OrderHistory />} />
+            <Route path="/cart" element={<Cart />} />
+          </Routes>
+        </div>
+        <Footer />
       </div>
-              <Footer />
-
     </Router>
   )
 }

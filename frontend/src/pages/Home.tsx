@@ -6,7 +6,6 @@ const Home: React.FC = () => {
     <div className="home-container">
       <div className="hero-section">
         <img src="/images/mooneys.avif" alt="Mooney's bokhandel" className="hero-image" />
-
       </div>
 
       <section className="featured-section">
@@ -31,32 +30,32 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      <section className="how-it-works">
-        <h3>Så fungerar det</h3>
-        <ol>
-          <li>Skapa ett konto eller logga in.</li>
-          <li>Bläddra bland våra böcker och välj att hyra eller köpa.</li>
-          <li>Slutför din beställning och vänta på leverans.</li>
-        </ol>
+      <section className="services-section">
+        <h3>Vad du kan göra</h3>
+        <div className="services-grid">
+          <div className="service-card">📚 Hyr böcker snabbt och smidigt</div>
+          <div className="service-card">🛒 Köp dina favoritböcker för alltid</div>
+          <div className="service-card">📦 Snabb leverans hem till dig</div>
+        </div>
       </section>
 
-       <section className="owner-section">
-  <h3>Meet the Owner </h3>
-  <div className="owner-content">
-    <img src="/images/Joe.webp" alt="Joe - ägare" className="owner-image" />
-    <div className="owner-text">
-      <p>
-        Joe är inte bara bokhandlare – han är en passionerad biblioteksälskare med en djup förståelse för människors läshunger.
-        Med en bakgrund som sträcker sig från klassisk litteratur till moderna thrillers, har han en nästan skrämmande känsla
-        för att veta exakt vilken bok du behöver... ibland innan du själv vet det.
-      </p>
-      <p>
-        Han tror att varje bok har en själ, och varje läsare förtjänar att hitta sin perfekta match. Välkommen till hans värld –
-        där varje sida betyder något.
-      </p>
-    </div>
-  </div>
-</section>
+      <section className="owner-section">
+        <h3>Meet the Owner </h3>
+        <div className="owner-content">
+          <img src="/images/Joe.webp" alt="Joe - ägare" className="owner-image" />
+          <div className="owner-text">
+            <p>
+              Joe är inte bara bokhandlare – han är en passionerad biblioteksälskare med en djup förståelse för människors läshunger.
+              Med en bakgrund som sträcker sig från klassisk litteratur till moderna thrillers, har han en nästan skrämmande känsla
+              för att veta exakt vilken bok du behöver... ibland innan du själv vet det.
+            </p>
+            <p>
+              Han tror att varje bok har en själ, och varje läsare förtjänar att hitta sin perfekta match. Välkommen till hans värld –
+              där varje sida betyder något.
+            </p>
+          </div>
+        </div>
+      </section>
 
       <section className="reviews">
         <h3>Kundrecensioner</h3>
@@ -68,7 +67,14 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-
+      <section className="newsletter-section">
+        <h3>Prenumerera på vårt nyhetsbrev</h3>
+        <p>Få exklusiva boktips och kampanjer direkt till din inkorg.</p>
+        <div className="newsletter-form">
+          <input type="email" placeholder="Din e-postadress" />
+          <button>Registrera dig</button>
+        </div>
+      </section>
     </div>
   )
 }

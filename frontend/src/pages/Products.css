@@ -2,11 +2,40 @@
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  padding-bottom: 120px;
 }
 
 .products-container h1 {
   text-align: center;
   margin-bottom: 2rem;
+}
+
+.filter {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.filter label {
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+}
+
+.filter select,
+.filter input {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 200px;
+  background-color: #fff;
 }
 
 .book-grid {
