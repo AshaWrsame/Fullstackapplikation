@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
-import './Products.css'
-import BookDetails from '../components/BookDetails'
+import React, { useEffect, useState } from 'react';
+import './Products.css';
+import BookDetails from '../components/BookDetails';
 
 interface Book {
   key: string
