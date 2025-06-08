@@ -1,58 +1,62 @@
 import React, { useEffect, useState } from 'react'
 import './products.css'
+import BookDetails from '../components/BookDetails'
 
 interface Book {
-  key: string;
-  title: string;
-  author_name?: string[];
+  key: string
+  title: string
+  author_name?: string[]
   cover_i?: number;
-  subject?: string[];
-  first_publish_year?: number;
-  language?: string[];
+  subject?: string[]
+  first_publish_year?: number
+  language?: string[]
 }
 
 const Products: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([])
-  const [limit, setLimit] = useState(20);
+  const [limit, setLimit] = useState(20)
   const [subject, setSubject] = useState('')
   const [year, setYear] = useState('')
   const [language, setLanguage] = useState('')
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null)
 
   const fetchBooks = async () => {
     try {
-      let query = 'programming'
-      if (subject) query += `+subject:${subject}`
-      if (year) query += `+first_publish_year:${year}`
-      if (language) query += `+language:${language}`
+      let baseUrl = `https://openlibrary.org/search.json?`
+      let params = [`q=programming`]
 
-      const queryUrl = `https://openlibrary.org/search.json?q=${query}&limit=${limit}`
-      console.log('Query URL:', queryUrl)
+      if (subject) params.push(`subject=${subject}`)
+      if (year) params.push(`first_publish_year=${year}`)
+      if (language) params.push(`language=${language}`)
 
+      params.push(`limit=${limit}`)
+
+      const queryUrl = baseUrl + params.join('&')
       const response = await fetch(queryUrl)
       const data = await response.json()
-      console.log('Resultat från API:', data.docs)
       setBooks(data.docs)
     } catch (error) {
       console.error('Fel vid hämtning av böcker:', error)
     }
-  }
-
+  };
+const price = Math.floor(Math.random() * 200) + 50
   useEffect(() => {
-    fetchBooks();
+    fetchBooks()
   }, [limit, subject, year, language])
 
   const handleAddToCart = (book: Book) => {
     const productId = book.key.replace('/works/', '')
     const imageUrl = book.cover_i
       ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
-      : '';
+      : ''
 
     const cartItem = {
       product_id: productId,
       title: book.title,
       image_url: imageUrl,
       quantity: 1,
-    };
+      price,
+    }
 
     const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
     const updatedCart = [...existingCart, cartItem]
@@ -107,7 +111,7 @@ const Products: React.FC = () => {
             : '';
 
           return (
-            <div className="book-card" key={book.key}>
+            <div className="book-card" key={book.key} onClick={() => setSelectedBook(book)}>
               {imageUrl ? (
                 <img src={imageUrl} alt={book.title} />
               ) : (
@@ -115,7 +119,6 @@ const Products: React.FC = () => {
               )}
               <h3>{book.title}</h3>
               <p>{book.author_name?.join(', ')}</p>
-              <button onClick={() => handleAddToCart(book)}>Lägg i varukorg</button>
             </div>
           );
         })}
@@ -124,6 +127,14 @@ const Products: React.FC = () => {
       <button className="show-more" onClick={() => setLimit(limit + 10)}>
         Visa fler böcker
       </button>
+
+      {selectedBook && (
+        <BookDetails
+          book={selectedBook}
+          onClose={() => setSelectedBook(null)}
+          onAddToCart={handleAddToCart}
+        />
+      )}
     </div>
   )
 }

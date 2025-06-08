@@ -1,53 +1,68 @@
-import React, { useEffect, useState } from 'react'
-import './cart.css'
+import React, { useEffect, useState } from 'react';
+import './cart.css';
 
 interface CartItem {
   product_id: string;
   title: string;
   image_url: string;
   quantity: number;
+  price: number;
 }
 
 const Cart: React.FC = () => {
-  const [cart, setCart] = useState<CartItem[]>([])
-  const [payment, setPayment] = useState('kort')
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState<CartItem>({
+    product_id: '',
+    title: '',
+    image_url: '',
+    quantity: 1,
+    price: 0,
+  });
 
   useEffect(() => {
-    const storedCart = localStorage.getItem('cart')
+    const storedCart = localStorage.getItem('cart');
     if (storedCart) {
-      setCart(JSON.parse(storedCart))
+      setCartItems(JSON.parse(storedCart));
     }
-  }, [])
 
-  const updateCart = (newCart: CartItem[]) => {
-    setCart(newCart)
-    localStorage.setItem('cart', JSON.stringify(newCart))
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      setIsAdmin(decoded.role === 'Admin');
+    }
+  }, []);
+
+  const updateLocalStorage = (items: CartItem[]) => {
+    setCartItems(items);
+    localStorage.setItem('cart', JSON.stringify(items));
   };
 
-  const increaseQuantity = (index: number) => {
-    const updated = [...cart]
-    updated[index].quantity += 1
-    updateCart(updated);
-  }
+  const removeItem = (product_id: string) => {
+    const updated = cartItems.filter(item => item.product_id !== product_id);
+    updateLocalStorage(updated);
+  };
 
-  const decreaseQuantity = (index: number) => {
-    const updated = [...cart]
-    if (updated[index].quantity > 1) {
-      updated[index].quantity -= 1
-      updateCart(updated)
-    }
-  }
+  const changeQuantity = (product_id: string, delta: number) => {
+    const updated = cartItems.map(item => {
+      if (item.product_id === product_id) {
+        const newQty = item.quantity + delta;
+        return { ...item, quantity: newQty > 0 ? newQty : 1 };
+      }
+      return item;
+    });
+    updateLocalStorage(updated);
+  };
 
-  const removeItem = (index: number) => {
-    const updated = cart.filter((_, i) => i !== index)
-    updateCart(updated)
-  }
+  const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const handleCheckout = async () => {
-    const token = localStorage.getItem('token')
+  const handleOrder = async () => {
+    const token = localStorage.getItem('token');
     if (!token) {
-      alert('Du måste vara inloggad för att beställa.')
-      return
+      alert('Du måste vara inloggad för att beställa.');
+      return;
     }
 
     try {
@@ -57,80 +72,112 @@ const Cart: React.FC = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ items: cart }),
+        body: JSON.stringify({ items: cartItems }),
       });
 
-      const data = await response.json();
       if (response.ok) {
-        alert(`Beställning lyckades med ${payment}!`)
+        alert('Din beställning har genomförts!');
         localStorage.removeItem('cart');
-        setCart([])
+        setCartItems([]);
       } else {
-        alert(data.error || 'Något gick fel vid beställning.')
+        const data = await response.json();
+        alert(data.error || 'Kunde inte slutföra beställningen.');
       }
-    } catch (err) {
-      console.error(err)
-      alert('Kunde inte slutföra beställningen.')
+    } catch (error) {
+      console.error('Fel vid beställning:', error);
+      alert('Ett fel uppstod vid beställning.');
     }
   };
 
-  const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0)
+  const handleEditClick = (index: number) => {
+    setEditingIndex(index);
+    setEditForm(cartItems[index]);
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditForm({ ...editForm, [name]: name === 'price' || name === 'quantity' ? +value : value });
+  };
+
+  const handleEditSave = () => {
+    if (editingIndex !== null) {
+      const updated = [...cartItems];
+      updated[editingIndex] = editForm;
+      updateLocalStorage(updated);
+      setEditingIndex(null);
+    }
+  };
 
   return (
     <div className="cart-container">
-      <h2 className="cart-title">Din varukorg</h2>
-
-      {cart.length === 0 ? (
+      <h2>Varukorg</h2>
+      {cartItems.length === 0 ? (
         <p>Din varukorg är tom.</p>
       ) : (
         <>
-          {cart.map((item, index) => (
-            <div className="cart-item" key={index}>
-              <img src={item.image_url} alt={item.title} />
-              <div className="cart-details">
-                <h3>{item.title}</h3>
-                <p>Antal: {item.quantity}</p>
-              </div>
-              <div className="cart-actions">
-                <button onClick={() => increaseQuantity(index)}>+</button>
-                <button onClick={() => decreaseQuantity(index)}>-</button>
-                <button className="remove" onClick={() => removeItem(index)}>Ta bort</button>
-              </div>
-            </div>
-          ))}
+          <table className="cart-table">
+            <thead>
+              <tr>
+                <th>Bild</th>
+                <th>Titel</th>
+                <th>Pris</th>
+                <th>Antal</th>
+                <th>Totalt</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {cartItems.map((item, index) => (
+                <tr key={item.product_id}>
+                  <td><img src={item.image_url} alt={item.title} className="cart-image" /></td>
+                  <td>{item.title}</td>
+                  <td>{item.price} kr</td>
+                  <td>
+                    <button onClick={() => changeQuantity(item.product_id, -1)}>-</button>
+                    {item.quantity}
+                    <button onClick={() => changeQuantity(item.product_id, 1)}>+</button>
+                  </td>
+                  <td>{item.price * item.quantity} kr</td>
+                  <td><button onClick={() => removeItem(item.product_id)}>Ta bort</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="cart-total">Totalt att betala: {totalPrice} kr</div>
 
-          <div className="cart-summary">Totalt antal böcker: {totalQuantity}</div>
-
-          <div className="payment-options">
-            <strong>Välj betalningsmetod:</strong>
-            <label>
-              <input
-                type="radio"
-                name="payment"
-                value="kort"
-                checked={payment === 'kort'}
-                onChange={(e) => setPayment(e.target.value)}
-              />
-              Kort
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="payment"
-                value="swish"
-                onChange={(e) => setPayment(e.target.value)}
-              />
-              Swish
-            </label>
+          <div className="payment-method">
+            <h3>Välj betalningsmetod:</h3>
+            <label><input type="radio" name="payment" value="card" onChange={(e) => setPaymentMethod(e.target.value)} /> Kort</label>
+            <label><input type="radio" name="payment" value="swish" onChange={(e) => setPaymentMethod(e.target.value)} /> Swish</label>
+            <label><input type="radio" name="payment" value="invoice" onChange={(e) => setPaymentMethod(e.target.value)} /> Faktura</label>
           </div>
 
-          <button className="checkout-btn" onClick={handleCheckout}>
-            Slutför beställning
-          </button>
+          <button className="checkout-button" onClick={handleOrder}>Beställ</button>
+
+          {isAdmin && (
+            <div className="admin-editor">
+              <h3>Redigera beställning (Admin)</h3>
+              {editingIndex !== null && (
+                <div className="edit-form">
+                  <input name="title" value={editForm.title} onChange={handleEditChange} placeholder="Titel" />
+                  <input name="price" type="number" value={editForm.price} onChange={handleEditChange} placeholder="Pris" />
+                  <input name="quantity" type="number" value={editForm.quantity} onChange={handleEditChange} placeholder="Antal" />
+                  <button onClick={handleEditSave}>Spara</button>
+                </div>
+              )}
+              <ul>
+                {cartItems.map((item, index) => (
+                  <li key={index}>
+                    {item.title} <button onClick={() => handleEditClick(index)}>Redigera</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Cart
+export default Cart;
