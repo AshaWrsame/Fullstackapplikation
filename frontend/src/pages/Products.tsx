@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import './products.css'
+import './Products.css'
 import BookDetails from '../components/BookDetails'
 
 interface Book {
