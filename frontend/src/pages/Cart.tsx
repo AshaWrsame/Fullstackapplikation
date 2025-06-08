@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './cart.css';
+import './Cart.css';
 
 interface CartItem {
   product_id: string;
