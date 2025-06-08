@@ -24,7 +24,7 @@ const OrderHistory: React.FC = () => {
       }
 
       try {
-        const response = await axios.get('http://localhost:3000/orders/history', {
+        const response = await axios.get('https://din-backend.onrender.com/history', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
